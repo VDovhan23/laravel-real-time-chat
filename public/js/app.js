@@ -47377,21 +47377,50 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     data: function data() {
         return {
-            open: true
+            friends: []
         };
     },
 
     methods: {
-        close: function close() {
-            this.open = false;
+        close: function close(friend) {
+            friend.session.open = false;
+        },
+        getFriends: function getFriends() {
+            var _this = this;
+
+            axios.post('/getFriends').then(function (res) {
+                return _this.friends = res.data.data;
+            });
+        },
+        openChat: function openChat(friend) {
+            if (friend.session) {
+                this.friends.forEach(function (friend) {
+                    friend.session.open = false;
+                });
+                friend.session.open = true;
+            } else {
+                this.createSession(friend);
+            }
+        },
+        createSession: function createSession(friend) {
+            axios.post('/session/create', { friend_id: friend.id }).then(function (res) {
+                friend.session = res.data.data, friend.session.open = true;
+            });
         }
     },
-    created: function created() {},
+    created: function created() {
+        this.getFriends();
+    },
 
     components: { MessageComponent: __WEBPACK_IMPORTED_MODULE_0__MessageComponent___default.a }
 });
@@ -47406,39 +47435,68 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "container" }, [
     _c("div", { staticClass: "row justify-content-center" }, [
-      _vm._m(0),
+      _c("div", { staticClass: "col-md-3" }, [
+        _c("div", { staticClass: "card card-default" }, [
+          _c("div", { staticClass: "card-header" }, [
+            _vm._v("\n                    Private chat\n                ")
+          ]),
+          _vm._v(" "),
+          _c(
+            "ul",
+            { staticClass: "list-group" },
+            _vm._l(_vm.friends, function(friend) {
+              return _c(
+                "a",
+                {
+                  key: friend.id,
+                  attrs: { href: "" },
+                  on: {
+                    click: function($event) {
+                      $event.preventDefault()
+                      _vm.openChat(friend)
+                    }
+                  }
+                },
+                [
+                  _c("li", { staticClass: "list-group-item" }, [
+                    _vm._v(" " + _vm._s(friend.name))
+                  ])
+                ]
+              )
+            })
+          )
+        ])
+      ]),
       _vm._v(" "),
       _c(
         "div",
         { staticClass: "col-md-9" },
-        [
-          _vm.open
-            ? _c("message-component", { on: { close: _vm.close } })
+        _vm._l(_vm.friends, function(friend) {
+          return friend.session
+            ? _c(
+                "span",
+                { key: friend.id },
+                [
+                  friend.session.open
+                    ? _c("message-component", {
+                        attrs: { friend: friend },
+                        on: {
+                          close: function($event) {
+                            _vm.close(friend)
+                          }
+                        }
+                      })
+                    : _vm._e()
+                ],
+                1
+              )
             : _vm._e()
-        ],
-        1
+        })
       )
     ])
   ])
 }
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-md-3" }, [
-      _c("div", { staticClass: "card card-default" }, [
-        _c("div", { staticClass: "card-header" }, [
-          _vm._v("\n                    Private chat\n                ")
-        ]),
-        _vm._v(" "),
-        _c("ul", { staticClass: "list-group" }, [
-          _c("li", { staticClass: "list-group-item" }, [_vm._v(" GENHJ")])
-        ])
-      ])
-    ])
-  }
-]
+var staticRenderFns = []
 render._withStripped = true
 module.exports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
@@ -47941,6 +47999,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 
 /* harmony default export */ __webpack_exports__["default"] = ({
+    props: ['friend'],
     data: function data() {
         return {
             chats: [],
@@ -47981,6 +48040,7 @@ var render = function() {
   return _c("div", { staticClass: "card card-default chat-box" }, [
     _c("div", { staticClass: "card-header" }, [
       _c("b", { class: { "text-danger": _vm.block_session } }, [
+        _vm._v("\n            " + _vm._s(_vm.friend.name) + "\n            "),
         _vm.block_session ? _c("span", [_vm._v("(Blocked)")]) : _vm._e()
       ]),
       _vm._v(" "),

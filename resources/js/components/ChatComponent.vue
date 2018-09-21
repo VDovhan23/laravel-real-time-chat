@@ -7,22 +7,27 @@
                         Private chat
                     </div>
                     <ul class="list-group">
-                        <!--<a href=""-->
-                           <!--@click.prevent="openChat(user)"-->
-                           <!--:key="user.id"-->
-                           <!--v-for="user in users">-->
-                            <li class="list-group-item"> GENHJ</li>
-                        <!--</a>-->
+                        <a href=""
+                           v-for="friend in friends"
+                           @click.prevent="openChat(friend)"
+                           :key="friend.id">
+                            <li class="list-group-item" > {{friend.name}}</li>
+                        </a>
                     </ul>
                 </div>
             </div>
             <div class="col-md-9">
-                <!--<span v-for="user in users" :key="user.id" v-if="user.session">-->
+                <span
+                      v-for="friend in friends"
+                      :key="friend.id"
+                      v-if="friend.session">
+
                 <message-component
-                        v-if="open"
-                        @close="close"
+                        v-if="friend.session.open"
+                        @close="close(friend)"
+                        :friend=friend
                 ></message-component>
-            <!--</span>-->
+            </span>
             </div>
         </div>
     </div>
@@ -34,16 +39,36 @@
     export default {
         data(){
             return{
-                open: true
+                friends:[],
             }
         },
         methods:{
-            close(){
-                this.open = false
+            close(friend){
+                friend.session.open = false
+            },
+            getFriends(){
+                axios.post('/getFriends').then(res => this.friends=res.data.data)
+            },
+            openChat(friend){
+                    if (friend.session) {
+                    this.friends.forEach(friend=>{
+                        friend.session.open =false
+                    });
+                    friend.session.open =true
+                    }
+                    else{
+                        this.createSession(friend);
+                    }
+            },
+            createSession(friend){
+                axios.post('/session/create', {friend_id:friend.id})
+                    .then(res=> {(friend.session =res.data.data),
+                    (friend.session.open = true);
+                    })
             }
         },
         created(){
-
+            this.getFriends()
         },
         components: { MessageComponent }
     }

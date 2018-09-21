@@ -14,6 +14,11 @@ class SessionResource extends JsonResource
      */
     public function toArray($request)
     {
-        return parent::toArray($request);
+//        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'open' => false,
+            'users' => [$this->user1_id, $this->user2_id],
+        ];
     }
 }
