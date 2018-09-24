@@ -68,8 +68,37 @@
             }
         },
         created(){
-            this.getFriends()
+            this.getFriends();
+
+            // console.log(Echo.join(`Chat`));
+            Echo.channel('Chat').listen('SessionEvent', e=>{
+                let friend = this.friend.find(friend=> friend.id == e.session_by);
+                friend.session = e.session;
+            });
+
+            Echo.join(`Chat`)
+                .here(users => {
+                    this.friends.forEach(friend => {
+                        users.forEach(user => {
+                            if (user.id === friend.id) {
+                                friend.online = true;
+                            }
+                        });
+                    });
+                })
+                .joining(user => {
+                    this.friends.forEach(
+                        friend => (user.id == friend.id ? (friend.online = true) : "")
+                    );
+                })
+                .leaving(user => {
+                    this.friends.forEach(
+                        friend => (user.id == friend.id ? (friend.online = false) : "")
+                    );
+                });
         },
-        components: { MessageComponent }
+
+        components: { MessageComponent },
+
     }
 </script>

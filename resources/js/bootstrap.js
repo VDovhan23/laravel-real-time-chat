@@ -1,4 +1,3 @@
-
 window._ = require('lodash');
 window.Popper = require('popper.js').default;
 
@@ -45,12 +44,12 @@ if (token) {
  */
 
 import Echo from 'laravel-echo'
+
 window.Pusher = require('pusher-js');
+
 window.Echo = new Echo({
     broadcaster: 'pusher',
-    // key: "3949e3feb9028f1ec8c4",
-    key: process.env.MIX_PUSHER_APP_KEY,
-    cluster: process.env.MIX_PUSHER_APP_CLUSTER,
-    // cluster: "ap2",
-    encrypted: true
+    key: "3949e3feb9028f1ec8c4",
+    cluster: "ap2",
+    useTLS: true
 });
