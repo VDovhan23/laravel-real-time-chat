@@ -57789,13 +57789,24 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     data: function data() {
         return {
             chats: [],
+            message: null,
             block_session: false
         };
     },
 
     methods: {
         send: function send() {
-            console.log("yes");
+            if (this.message) {
+                this.pushToChats(this.message);
+                axios.post('/send/' + this.friend.session.id, {
+                    content: this.message,
+                    to_user: this.friend.id
+                });
+                this.message = null;
+            }
+        },
+        pushToChats: function pushToChats(message) {
+            this.chats.push({ message: message });
         },
         close: function close() {
             this.$emit('close');
@@ -57811,7 +57822,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         }
     },
     created: function created() {
-        this.chats.push({ message: "heyy" }, { message: "heyaay" }, { message: "heyy you to" }, { message: "yyyyyyyyyy" }, { message: "heyasdady" }, { message: "heyasasdaddsdady" }, { message: "heyasaasdaasdasdady" }, { message: "heyasasasdasdaasaddy" }, { message: "heyasaasdasdsdasdady" }, { message: "heyasasaaadasdady" });
+        this.chats.push({ message: "heyy" }, { message: "heyaay" }, { message: "heyy you to" });
     }
 });
 
@@ -57930,11 +57941,28 @@ var render = function() {
       [
         _c("div", { staticClass: "form-group" }, [
           _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.message,
+                expression: "message"
+              }
+            ],
             staticClass: "form-control",
             attrs: {
               type: "text",
               placeholder: "Write your message",
               disabled: _vm.block_session
+            },
+            domProps: { value: _vm.message },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.message = $event.target.value
+              }
             }
           })
         ])

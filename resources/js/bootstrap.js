@@ -51,5 +51,5 @@ window.Echo = new Echo({
     broadcaster: 'pusher',
     key: "3949e3feb9028f1ec8c4",
     cluster: "ap2",
-    useTLS: true
+    useTLS: true,
 });
