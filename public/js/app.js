@@ -57833,7 +57833,17 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         }
     },
     created: function created() {
+        var _this2 = this;
+
         this.getAllMessages();
+
+        Echo.private('Chat.' + this.friend.session.id).listen('PrivateChatEvent', function (e) {
+            _this2.chats.push({
+                message: e.content,
+                type: 1,
+                send_at: 'just now'
+            });
+        });
     }
 });
 
@@ -57935,7 +57945,7 @@ var render = function() {
         return _c(
           "p",
           {
-            key: chat.message,
+            key: chat.id,
             staticClass: "card-text",
             class: { "text-right": chat.type == 0 }
           },
