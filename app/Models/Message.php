@@ -14,7 +14,7 @@ class Message extends Model
     public function createForSend($session_id){
         $this->chats()->create([
             'session_id'=>$session_id,
-            'type'=>1,
+            'type'=>0,
             'user_id'=>auth()->id()]);
     }
 

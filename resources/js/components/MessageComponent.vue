@@ -23,7 +23,7 @@
 
         </div>
         <div class="card-body" v-chat-scroll>
-            <p class="card-text" v-for="chat in chats" :key="chat.message">
+            <p class="card-text" :class="{'text-right':chat.type == 0}" v-for="chat in chats" :key="chat.message">
                 {{chat.message}}
             </p>
         </div>
@@ -56,8 +56,12 @@
                     this.message = null;
                 }
             },
-            pushToChats(message){
-                this.chats.push({message: message});
+            pushToChats(message) {
+                this.chats.push({
+                    message: message,
+                    type:0,
+                    send_at: 'just now'
+                });
             },
             close(){
                 this.$emit('close');
@@ -70,15 +74,15 @@
             },
             unblock(){
                 this.block_session = false
+            },
+            getAllMessages(){
+                axios
+                    .post(`/session/${this.friend.session.id}/chats`)
+                    .then(res=>(this.chats = res.data.data));
             }
         },
         created(){
-            this.chats.push(
-                {message: "heyy"},
-                {message: "heyaay"},
-                {message: "heyy you to"},
-
-            )
+            this.getAllMessages();
         }
     }
 </script>

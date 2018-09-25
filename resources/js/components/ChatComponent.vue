@@ -51,9 +51,7 @@
             },
             openChat(friend){
                     if (friend.session) {
-                    this.friends.forEach(friend=>{
-                        friend.session.open =false
-                    });
+                    this.friends.forEach(friend=> friend.session ? friend.session.open =false : '');
                     friend.session.open =true
                     }
                     else{
