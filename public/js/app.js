@@ -14130,8 +14130,8 @@ window.Pusher = __webpack_require__(39);
 
 window.Echo = new __WEBPACK_IMPORTED_MODULE_0_laravel_echo___default.a({
   broadcaster: 'pusher',
-  key: "3949e3feb9028f1ec8c4",
-  cluster: "ap2",
+  key: "efb362c3888f370dde18",
+  cluster: "eu",
   useTLS: true
 });
 
@@ -57392,7 +57392,7 @@ exports = module.exports = __webpack_require__(48)(false);
 
 
 // module
-exports.push([module.i, "\n.chat-box[data-v-3f20c7be]{\n    height: 400px;\n}\n.card-body[data-v-3f20c7be]{\n    overflow-y: scroll;\n}\n", ""]);
+exports.push([module.i, "\n.chat-box[data-v-3f20c7be]{\n    height: 400px;\n}\n.card-body[data-v-3f20c7be]{\n    overflow-y: scroll;\n}\n.message_time[data-v-3f20c7be]{\n    font-size: 10px;\n    color: #1d6173;\n}\n", ""]);
 
 // exports
 
@@ -57783,6 +57783,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     props: ['friend'],
@@ -57816,7 +57818,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             this.$emit('close');
         },
         clear: function clear() {
-            this.chats = [];
+            var _this = this;
+
+            axios.post('/session/' + this.friend.session.id + '/clear').then(function (res) {
+                return _this.chats = [];
+            });
         },
         block: function block() {
             this.block_session = true;
@@ -57825,20 +57831,20 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             this.block_session = false;
         },
         getAllMessages: function getAllMessages() {
-            var _this = this;
+            var _this2 = this;
 
             axios.post('/session/' + this.friend.session.id + '/chats').then(function (res) {
-                return _this.chats = res.data.data;
+                return _this2.chats = res.data.data;
             });
         }
     },
     created: function created() {
-        var _this2 = this;
+        var _this3 = this;
 
         this.getAllMessages();
 
         Echo.private('Chat.' + this.friend.session.id).listen('PrivateChatEvent', function (e) {
-            _this2.chats.push({
+            _this3.chats.push({
                 message: e.content,
                 type: 1,
                 send_at: 'just now'
@@ -57949,7 +57955,14 @@ var render = function() {
             staticClass: "card-text",
             class: { "text-right": chat.type == 0 }
           },
-          [_vm._v("\n            " + _vm._s(chat.message) + "\n        ")]
+          [
+            _vm._v("\n            " + _vm._s(chat.message) + "\n            "),
+            _c("br"),
+            _vm._v(" "),
+            _c("span", { staticClass: "message_time" }, [
+              _vm._v(_vm._s(chat.send_at))
+            ])
+          ]
         )
       })
     ),

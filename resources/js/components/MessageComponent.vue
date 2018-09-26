@@ -25,6 +25,8 @@
         <div class="card-body" v-chat-scroll>
             <p class="card-text" :class="{'text-right':chat.type == 0}" v-for="chat in chats" :key="chat.id">
                 {{chat.message}}
+                <br>
+                <span class="message_time">{{chat.send_at}}</span>
             </p>
         </div>
         <form  class="card-footer" @submit.prevent="send">
@@ -67,7 +69,9 @@
                 this.$emit('close');
             },
             clear(){
-                this.chats = [];
+
+                axios.post(`/session/${this.friend.session.id}/clear`)
+                    .then(res=> (this.chats = []));
             },
             block(){
                 this.block_session = true
@@ -101,5 +105,9 @@
     }
     .card-body{
         overflow-y: scroll;
+    }
+    .message_time{
+        font-size: 10px;
+        color: #1d6173;
     }
 </style>
