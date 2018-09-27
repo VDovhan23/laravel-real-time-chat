@@ -2,7 +2,7 @@
     <div class="card card-default chat-box" >
         <div class="card-header">
             <b :class="{'text-danger' :session.block}">
-                {{friend.name}}
+                {{friend.name}} <span class="isTyping" v-if="isTyping">typing...</span>
                 <span v-if="session.block">(Blocked)</span>
             </b>
             <!--close button-->
@@ -44,7 +44,7 @@
             return{
                 chats:[],
                 message: null,
-
+                isTyping: false
             }
         },
         computed:{
@@ -52,9 +52,18 @@
               return this.friend.session
           },
             can(){
-              return this.session.blocked_by == authId;
+              return this.session.blocked_by == auth.id;
             }
-
+        },
+        watch:{
+          message(value){
+              if(value){
+              Echo.private((`Chat.${this.friend.session.id}`))
+                  .whisper('typing', {
+                      name: auth.name
+                  });
+              }
+          }
         },
         methods: {
             send(){
@@ -86,7 +95,7 @@
                 this.session.block = true;
                 axios
                     .post(`/session/${this.friend.session.id}/block`)
-                    .then(res => (this.session.blocked_by = authId))
+                    .then(res => (this.session.blocked_by = auth.id))
             },
             unblock(){
                 this.session.block = false;
@@ -115,6 +124,14 @@
                     e => (this.session.block = e.blocked)
                 );
 
+            Echo.private(`Chat.${this.friend.session.id}`)
+                .listenForWhisper('typing', (e) => {
+                    this.isTyping = true,
+                    setTimeout(()=>{
+                        this.isTyping = false
+                    },1500)
+                }
+                );
         }
     }
 </script>
@@ -126,7 +143,11 @@
     .card-body{
         overflow-y: scroll;
     }
-    .message_time{
+    .message_time {
+        font-size: 10px;
+        color: #1d6173;
+    }
+    .isTyping{
         font-size: 10px;
         color: #1d6173;
     }

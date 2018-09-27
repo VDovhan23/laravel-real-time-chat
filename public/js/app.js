@@ -57392,7 +57392,7 @@ exports = module.exports = __webpack_require__(48)(false);
 
 
 // module
-exports.push([module.i, "\n.chat-box[data-v-3f20c7be]{\n    height: 400px;\n}\n.card-body[data-v-3f20c7be]{\n    overflow-y: scroll;\n}\n.message_time[data-v-3f20c7be]{\n    font-size: 10px;\n    color: #1d6173;\n}\n", ""]);
+exports.push([module.i, "\n.chat-box[data-v-3f20c7be]{\n    height: 400px;\n}\n.card-body[data-v-3f20c7be]{\n    overflow-y: scroll;\n}\n.message_time[data-v-3f20c7be] {\n    font-size: 10px;\n    color: #1d6173;\n}\n.isTyping[data-v-3f20c7be]{\n    font-size: 10px;\n    color: #1d6173;\n}\n", ""]);
 
 // exports
 
@@ -57791,8 +57791,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     data: function data() {
         return {
             chats: [],
-            message: null
-
+            message: null,
+            isTyping: false
         };
     },
 
@@ -57801,7 +57801,16 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             return this.friend.session;
         },
         can: function can() {
-            return this.session.blocked_by == authId;
+            return this.session.blocked_by == auth.id;
+        }
+    },
+    watch: {
+        message: function message(value) {
+            if (value) {
+                Echo.private('Chat.' + this.friend.session.id).whisper('typing', {
+                    name: auth.name
+                });
+            }
         }
     },
     methods: {
@@ -57837,7 +57846,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
             this.session.block = true;
             axios.post('/session/' + this.friend.session.id + '/block').then(function (res) {
-                return _this2.session.blocked_by = authId;
+                return _this2.session.blocked_by = auth.id;
             });
         },
         unblock: function unblock() {
@@ -57870,6 +57879,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         }), Echo.private('Chat.' + this.friend.session.id).listen("BlockEvent", function (e) {
             return _this5.session.block = e.blocked;
         });
+
+        Echo.private('Chat.' + this.friend.session.id).listenForWhisper('typing', function (e) {
+            _this5.isTyping = true, setTimeout(function () {
+                _this5.isTyping = false;
+            }, 1500);
+        });
     }
 });
 
@@ -57884,7 +57899,11 @@ var render = function() {
   return _c("div", { staticClass: "card card-default chat-box" }, [
     _c("div", { staticClass: "card-header" }, [
       _c("b", { class: { "text-danger": _vm.session.block } }, [
-        _vm._v("\n            " + _vm._s(_vm.friend.name) + "\n            "),
+        _vm._v("\n            " + _vm._s(_vm.friend.name) + " "),
+        _vm.isTyping
+          ? _c("span", { staticClass: "isTyping" }, [_vm._v("typing...")])
+          : _vm._e(),
+        _vm._v(" "),
         _vm.session.block ? _c("span", [_vm._v("(Blocked)")]) : _vm._e()
       ]),
       _vm._v(" "),
