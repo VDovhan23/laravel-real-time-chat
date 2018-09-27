@@ -15,6 +15,8 @@ class SessionResource extends JsonResource
             'id' => $this->id,
             'open' => false,
             'users' => [$this->user1_id, $this->user2_id],
+            'block'=> !!$this->block,
+            'blocked_by'=> $this->blocked_by
         ];
     }
 }

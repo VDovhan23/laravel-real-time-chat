@@ -1,9 +1,9 @@
 <template>
     <div class="card card-default chat-box" >
         <div class="card-header">
-            <b :class="{'text-danger' :block_session}">
+            <b :class="{'text-danger' :session.block}">
                 {{friend.name}}
-                <span v-if="block_session">(Blocked)</span>
+                <span v-if="session.block">(Blocked)</span>
             </b>
             <!--close button-->
             <a href="" @click.prevent='close'>
@@ -15,8 +15,8 @@
                     <i class="fas fa-ellipsis-v "></i>
                 </a>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item" href="#" v-if="block_session" @click.prevent='unblock' >UnBlock User</a>
-                    <a class="dropdown-item" href="#" v-else @click.prevent='block'>Block User</a>
+                    <a class="dropdown-item" href="#" v-if="session.block && can" @click.prevent='unblock' >UnBlock User</a>
+                    <a class="dropdown-item" href="#" v-if="!session.block" @click.prevent='block'>Block User</a>
                     <a class="dropdown-item" href="#" @click.prevent='clear'>Clear Chat</a>
                 </div>
             </div>
@@ -31,7 +31,7 @@
         </div>
         <form  class="card-footer" @submit.prevent="send">
             <div class="form-group">
-                <input type="text" class="form-control" placeholder="Write your message" :disabled="block_session" v-model="message">
+                <input type="text" class="form-control" placeholder="Write your message" :disabled="session.block" v-model="message">
             </div>
         </form>
     </div>
@@ -44,8 +44,17 @@
             return{
                 chats:[],
                 message: null,
-                block_session: false
+
             }
+        },
+        computed:{
+          session(){
+              return this.friend.session
+          },
+            can(){
+              return this.session.blocked_by == authId;
+            }
+
         },
         methods: {
             send(){
@@ -74,10 +83,16 @@
                     .then(res=> (this.chats = []));
             },
             block(){
-                this.block_session = true
+                this.session.block = true;
+                axios
+                    .post(`/session/${this.friend.session.id}/block`)
+                    .then(res => (this.session.blocked_by = authId))
             },
             unblock(){
-                this.block_session = false
+                this.session.block = false;
+                axios
+                    .post(`/session/${this.friend.session.id}/unblock`)
+                    .then(res => (this.session.blocked_by = null))
             },
             getAllMessages(){
                 axios
@@ -94,7 +109,12 @@
                     type:1,
                     send_at: 'just now'
                 });
-            })
+            }),
+                Echo.private(`Chat.${this.friend.session.id}`).listen(
+                    "BlockEvent",
+                    e => (this.session.block = e.blocked)
+                );
+
         }
     }
 </script>

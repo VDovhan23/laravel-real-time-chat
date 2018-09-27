@@ -57791,11 +57791,19 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     data: function data() {
         return {
             chats: [],
-            message: null,
-            block_session: false
+            message: null
+
         };
     },
 
+    computed: {
+        session: function session() {
+            return this.friend.session;
+        },
+        can: function can() {
+            return this.session.blocked_by == authId;
+        }
+    },
     methods: {
         send: function send() {
             if (this.message) {
@@ -57825,30 +57833,42 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             });
         },
         block: function block() {
-            this.block_session = true;
-        },
-        unblock: function unblock() {
-            this.block_session = false;
-        },
-        getAllMessages: function getAllMessages() {
             var _this2 = this;
 
+            this.session.block = true;
+            axios.post('/session/' + this.friend.session.id + '/block').then(function (res) {
+                return _this2.session.blocked_by = authId;
+            });
+        },
+        unblock: function unblock() {
+            var _this3 = this;
+
+            this.session.block = false;
+            axios.post('/session/' + this.friend.session.id + '/unblock').then(function (res) {
+                return _this3.session.blocked_by = null;
+            });
+        },
+        getAllMessages: function getAllMessages() {
+            var _this4 = this;
+
             axios.post('/session/' + this.friend.session.id + '/chats').then(function (res) {
-                return _this2.chats = res.data.data;
+                return _this4.chats = res.data.data;
             });
         }
     },
     created: function created() {
-        var _this3 = this;
+        var _this5 = this;
 
         this.getAllMessages();
 
         Echo.private('Chat.' + this.friend.session.id).listen('PrivateChatEvent', function (e) {
-            _this3.chats.push({
+            _this5.chats.push({
                 message: e.content,
                 type: 1,
                 send_at: 'just now'
             });
+        }), Echo.private('Chat.' + this.friend.session.id).listen("BlockEvent", function (e) {
+            return _this5.session.block = e.blocked;
         });
     }
 });
@@ -57863,9 +57883,9 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "card card-default chat-box" }, [
     _c("div", { staticClass: "card-header" }, [
-      _c("b", { class: { "text-danger": _vm.block_session } }, [
+      _c("b", { class: { "text-danger": _vm.session.block } }, [
         _vm._v("\n            " + _vm._s(_vm.friend.name) + "\n            "),
-        _vm.block_session ? _c("span", [_vm._v("(Blocked)")]) : _vm._e()
+        _vm.session.block ? _c("span", [_vm._v("(Blocked)")]) : _vm._e()
       ]),
       _vm._v(" "),
       _c(
@@ -57892,7 +57912,7 @@ var render = function() {
             attrs: { "aria-labelledby": "dropdownMenuButton" }
           },
           [
-            _vm.block_session
+            _vm.session.block && _vm.can
               ? _c(
                   "a",
                   {
@@ -57907,7 +57927,10 @@ var render = function() {
                   },
                   [_vm._v("UnBlock User")]
                 )
-              : _c(
+              : _vm._e(),
+            _vm._v(" "),
+            !_vm.session.block
+              ? _c(
                   "a",
                   {
                     staticClass: "dropdown-item",
@@ -57920,7 +57943,8 @@ var render = function() {
                     }
                   },
                   [_vm._v("Block User")]
-                ),
+                )
+              : _vm._e(),
             _vm._v(" "),
             _c(
               "a",
@@ -57993,7 +58017,7 @@ var render = function() {
             attrs: {
               type: "text",
               placeholder: "Write your message",
-              disabled: _vm.block_session
+              disabled: _vm.session.block
             },
             domProps: { value: _vm.message },
             on: {
